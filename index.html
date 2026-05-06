@@ -1,0 +1,1735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Express in Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/black.min.css">
+<style>
+  :root {
+    --amber:  #f5a623;
+    --green:  #4ecb8d;
+    --purple: #a78bfa;
+    --blue:   #60a5fa;
+    --red:    #f87171;
+    --bg:     #0a0a0f;
+    --bg2:    #10101a;
+    --bg3:    #181824;
+    --border: #2a2a3a;
+    --text:   #e8e8f0;
+    --muted:  #8888a8;
+  }
+
+  .reveal-viewport { background: var(--bg); }
+  .reveal .slides section { background: transparent; }
+
+  .reveal { font-family: 'DM Sans', sans-serif; color: var(--text); }
+  .reveal h1, .reveal h2, .reveal h3 { font-family: 'Playfair Display', serif; font-weight: 700; }
+  .reveal h1 { font-size: 1.6em; color: var(--amber); line-height: 1.1; }
+  .reveal h2 { font-size: 1.1em; color: var(--amber); margin-bottom: .2em; }
+  .reveal h3 { font-size: .78em; color: var(--green); margin-bottom: .15em; }
+  .reveal p  { font-size: .56em; line-height: 1.45; color: var(--text); }
+  .reveal li { font-size: .54em; line-height: 1.45; margin-bottom: .1em; }
+  .reveal code { font-family: 'JetBrains Mono', monospace; font-size: .72em; }
+  .reveal pre  { box-shadow: none; background: var(--bg3); border: 1px solid var(--border);
+                 border-radius: 6px; padding: .3em .5em; margin: .25em 0; }
+  .reveal pre code { font-size: .52em; line-height: 1.35; background: transparent; color: #cdd6f4; }
+
+  .slide-hdr {
+    display: flex; align-items: center; gap: .4em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: .2em; margin-bottom: .3em;
+  }
+  .slide-hdr .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .42em; font-weight: 500;
+    color: var(--bg); background: var(--amber);
+    padding: .1em .4em; border-radius: 3px;
+    letter-spacing: .04em;
+  }
+  .slide-hdr h2 { margin: 0; font-size: .95em; }
+
+  .cols   { display: grid; gap: .5em; }
+  .cols-2 { grid-template-columns: 1fr 1fr; }
+  .cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .cols-6040 { grid-template-columns: 6fr 4fr; }
+  .cols-4060 { grid-template-columns: 4fr 6fr; }
+
+  .card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: .35em .6em;
+  }
+  .card.amber { border-left: 3px solid var(--amber); }
+  .card.green { border-left: 3px solid var(--green); }
+  .card.purple{ border-left: 3px solid var(--purple); }
+  .card.blue  { border-left: 3px solid var(--blue); }
+  .card.red   { border-left: 3px solid var(--red); }
+  .card h3 { font-size: .64em; margin: 0 0 .12em; }
+  .card p  { font-size: .52em; margin: 0; color: #b8b8d0; }
+  .card ul { margin: 0; padding-left: 1em; }
+  .card li { font-size: .52em; color: #b8b8d0; margin-bottom: .02em; }
+
+  .reveal table { width: 100%; border-collapse: collapse; font-size: .5em; }
+  .reveal table th { background: var(--bg3); color: var(--amber); font-weight: 600;
+                     padding: .2em .4em; border: 1px solid var(--border); text-align: left; }
+  .reveal table td { padding: .18em .4em; border: 1px solid var(--border); color: #ccc; }
+  .reveal table tr:nth-child(even) td { background: #0e0e18; }
+
+  .a  { color: var(--amber); font-weight: 600; }
+  .g  { color: var(--green); font-weight: 600; }
+  .p  { color: var(--purple); font-weight: 600; }
+  .b  { color: var(--blue); font-weight: 600; }
+  .r  { color: var(--red); font-weight: 600; }
+  .mono { font-family: 'JetBrains Mono', monospace; }
+
+  svg.diagram { display: block; margin: 0 auto; overflow: visible; }
+
+  .pill {
+    display: inline-block; font-family: 'JetBrains Mono', monospace;
+    font-size: .44em; padding: .08em .4em; border-radius: 99px;
+    border: 1px solid; margin: 0 .08em;
+  }
+  .pill.amber { color: var(--amber); border-color: var(--amber); }
+  .pill.green { color: var(--green); border-color: var(--green); }
+  .pill.purple{ color: var(--purple); border-color: var(--purple); }
+  .pill.blue  { color: var(--blue); border-color: var(--blue); }
+
+  .reveal .slide-footer { display: none; }
+  .title-slide h1 { font-size: 1.8em; }
+  .title-slide .subtitle {
+    font-size: .7em; color: var(--green); font-family: 'DM Sans', sans-serif;
+    font-weight: 300; letter-spacing: .04em; margin: .3em 0 .6em;
+  }
+  .title-slide .meta { font-size: .48em; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+  .ss-row {
+    display: flex; gap: .25em; align-items: center;
+    margin: .1em 0; font-size: .55em; font-family: 'JetBrains Mono', monospace;
+  }
+  .ss-node {
+    padding: .2em .55em; border-radius: 5px; font-size: .9em;
+    background: var(--bg3); border: 1px solid var(--border); color: var(--text);
+  }
+  .ss-node.active { background: #1a2a1a; border-color: var(--green); color: var(--green); }
+  .ss-node.done   { background: #1a1a2a; border-color: var(--purple); color: var(--purple); }
+  .ss-arrow { color: var(--amber); }
+  .ss-label { font-size: .8em; color: var(--muted); margin-left: .3em; }
+
+  .reveal ul, .reveal ol { margin: .15em 0 .15em 1em; }
+  .reveal .slides > section { display: flex !important; flex-direction: column !important; overflow-y: auto !important; align-items: stretch !important; justify-content: flex-start !important; }
+</style>
+</head>
+<body>
+<div class="reveal">
+<div class="slides">
+
+
+<!-- ═══════════════════════════════ SLIDE 01 — TITLE ═══════════════════════════════ -->
+<section class="title-slide" data-background-color="#0a0a0f">
+  <div style="text-align:left; max-width:820px; margin:0 auto; padding: 1em 0;">
+    <div style="font-family:'JetBrains Mono',monospace; font-size:.5em; color:var(--muted); margin-bottom:.4em; letter-spacing:.1em;">
+      TECHNICAL PRESENTATION
+    </div>
+    <h1>Express<br>in Practice</h1>
+    <div class="subtitle">Production patterns for the Node.js web framework</div>
+    <div style="width:60px; height:3px; background:var(--amber); margin-bottom:1.4em;"></div>
+    <div style="display:flex; gap:1.2em; flex-wrap:wrap; margin-bottom:1em;">
+      <span class="pill amber">Express 5</span>
+      <span class="pill green">async/await</span>
+      <span class="pill purple">OpenAPI</span>
+      <span class="pill blue">helmet · CSP · CSRF</span>
+    </div>
+    <div class="ss-row" style="margin-top:0.6em;">
+      <span class="ss-node active">🛣 route</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">🔍 validate</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">🔐 authn/z</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node active">⚡ handle</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node done">📤 stream</span>
+      <span class="ss-arrow">→</span>
+      <span class="ss-node done">📈 observe</span>
+    </div>
+    <p style="max-width:620px; color:#a0a0c0; font-size:.56em; line-height:1.5; margin-top:1em;">
+      The companion deck to <em>Introduction to Express.js</em> &mdash; everything past "Hello World": project structure at scale, async error discipline, OpenAPI-first design, security hardening, observability, performance and graceful shutdown.
+    </p>
+    <div class="meta" style="margin-top:1.4em;">
+      Route &nbsp;·&nbsp; Validate &nbsp;·&nbsp; Authorise &nbsp;·&nbsp; Handle &nbsp;·&nbsp; Stream &nbsp;·&nbsp; Observe
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 02 — TOPICS ═══════════════════════════════ -->
+<section data-background-color="#0a0a0f">
+  <div class="slide-hdr"><span class="tag">02</span><h2>Topics</h2></div>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber">
+        <h3 class="a">Foundations &amp; structure</h3>
+        <ul>
+          <li>What changed in Express 5 &mdash; and what didn't</li>
+          <li>Async error handling &mdash; the one rule that prevents most outages</li>
+          <li>Project structure at scale &mdash; layered, feature-based, contract-first</li>
+          <li>Validation at the boundary &mdash; Zod, Joi, TypeBox</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:0.5em;">
+        <h3 class="g">Behaviour</h3>
+        <ul>
+          <li>Authentication patterns &mdash; sessions, JWT, refresh tokens</li>
+          <li>Authorisation patterns &mdash; route guards, RBAC, policy middleware</li>
+          <li>Streaming &mdash; SSE, range requests, gzip, downloads</li>
+          <li>File uploads &mdash; multer, busboy, direct-to-S3</li>
+          <li>Rate limiting &amp; abuse protection</li>
+          <li>Caching &mdash; ETag, Cache-Control, Redis cache-aside</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple">
+        <h3 class="p">Integration</h3>
+        <ul>
+          <li>Database integration patterns &mdash; pool, request-scoped txn</li>
+          <li>Background jobs &amp; decoupling &mdash; BullMQ</li>
+          <li>OpenAPI &amp; contract-first design</li>
+          <li>Testing &mdash; supertest, integration, contract tests</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:0.5em;">
+        <h3 class="b">Production</h3>
+        <ul>
+          <li>Observability &mdash; pino, OpenTelemetry, request IDs</li>
+          <li>Security hardening &mdash; helmet, CSP, CSRF, CORS</li>
+          <li>Performance &mdash; clustering, PM2, keep-alive, compression</li>
+          <li>Graceful shutdown &mdash; SIGTERM, drain, readiness</li>
+          <li>Reverse proxy &amp; TLS termination</li>
+          <li>Express vs Fastify, Koa, Hono, NestJS</li>
+          <li>Express 4 &rarr; 5 migration playbook</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 03 — EXPRESS 5 ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">03</span><h2>Express 5 &mdash; What Changed</h2></div>
+  <p>Express 5 (stable in 2024) is the first major release in nine years. It modernises async handling and tightens routing &mdash; <span class="a">small surface, real consequences</span>. Most apps need a focused migration, not a rewrite.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card green"><h3>The big wins</h3>
+        <ul>
+          <li><span class="g">Native promise support</span> &mdash; rejected promises returned from handlers reach the error pipeline; no more <code>express-async-errors</code></li>
+          <li><span class="g">path-to-regexp v8</span> &mdash; <code>:param</code> still works; ReDoS-prone wildcards rejected by default</li>
+          <li><span class="g">Body parsers built in</span> &mdash; <code>express.json()</code>, <code>express.urlencoded()</code>, <code>express.text()</code> &mdash; no separate <code>body-parser</code></li>
+          <li>Drop of legacy Node engines (Node &ge; 18)</li>
+          <li>Stricter <code>req.query</code> parsing &mdash; opt-in extended syntax</li>
+        </ul>
+      </div>
+      <div class="card amber" style="margin-top:.3em;"><h3>The async upgrade</h3>
+<pre><code class="language-javascript">// Express 4 &mdash; needed try/catch or express-async-errors
+app.get('/u/:id', async (req, res, next) =&gt; {
+  try {
+    res.json(await getUser(req.params.id));
+  } catch (err) { next(err); }
+});
+
+// Express 5 &mdash; promise rejections forwarded automatically
+app.get('/u/:id', async (req, res) =&gt; {
+  res.json(await getUser(req.params.id));
+});</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card red"><h3>Breaking changes that bite</h3>
+        <ul>
+          <li><span class="r"><code>app.del()</code></span> removed &mdash; use <code>app.delete()</code></li>
+          <li><span class="r">Regex paths</span> like <code>'/foo*'</code> now require explicit syntax (<code>'/foo{*splat}'</code> or a <code>RegExp</code> literal)</li>
+          <li><span class="r"><code>req.param()</code></span> removed &mdash; use <code>req.params</code> / <code>req.query</code> / <code>req.body</code></li>
+          <li><span class="r">Trust proxy default</span> still <code>false</code> &mdash; opt in behind a load balancer, or <code>X-Forwarded-For</code> is ignored</li>
+          <li><code>res.send(status)</code> overload removed &mdash; use <code>res.status(n).send()</code></li>
+          <li>Pluralised <code>res.redirect(url, status)</code> &rarr; <code>res.redirect(status, url)</code></li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Migration playbook</h3>
+        <ol>
+          <li>Bump to Node 18 LTS or later</li>
+          <li>Drop <code>body-parser</code>, <code>express-async-errors</code></li>
+          <li>Audit route patterns for wildcards / regex</li>
+          <li>Run tests; failures are usually about routing or query parsing</li>
+          <li>Set <code>app.set('trust proxy', 1)</code> if you front with a proxy / LB</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 04 — ASYNC ERRORS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">04</span><h2>Async Error Handling, Properly</h2></div>
+  <p>The single biggest source of "the server fell over" is unhandled rejections that escape the request lifecycle. The fix is a <span class="a">disciplined error pipeline</span> &mdash; one place where every error becomes an HTTP response.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>One central handler</h3>
+<pre><code class="language-javascript">// errors.js
+class HttpError extends Error {
+  constructor(status, code, message, details) {
+    super(message);
+    this.status  = status;
+    this.code    = code;
+    this.details = details;
+  }
+}
+const NotFound = (m='Not found') =&gt;
+  new HttpError(404, 'not_found', m);
+const Conflict = (m, d) =&gt;
+  new HttpError(409, 'conflict', m, d);
+
+module.exports = { HttpError, NotFound, Conflict };
+
+// errorMiddleware.js &mdash; mounted last
+module.exports = (err, req, res, _next) =&gt; {
+  const status = err.status ?? 500;
+  if (status &gt;= 500) req.log.error({ err }, 'unhandled');
+  res.status(status).json({
+    error: { code: err.code ?? 'internal',
+             message: status &gt;= 500 ? 'Internal error' : err.message,
+             details: err.details, request_id: req.id }
+  });
+};</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card green"><h3>Throwing as control flow</h3>
+<pre><code class="language-javascript">app.get('/users/:id', async (req, res) =&gt; {
+  const user = await users.byId(req.params.id);
+  if (!user) throw NotFound('user not found');
+  res.json(user);
+});
+
+// Zod validation &mdash; throw on failure
+app.post('/users', async (req, res) =&gt; {
+  const body = UserCreate.parse(req.body);   // ZodError on bad input
+  res.status(201).json(await users.create(body));
+});
+
+// translate library errors at one place &mdash; before the json handler
+app.use((err, req, res, next) =&gt; {
+  if (err instanceof ZodError)
+    return next(new HttpError(400, 'validation_failed',
+      'Invalid request', err.flatten()));
+  if (err.code === '23505')
+    return next(new HttpError(409, 'duplicate',
+      'Already exists'));
+  next(err);
+});</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Process-level safety net</h3>
+<pre><code class="language-javascript">process.on('unhandledRejection', (err) =&gt; {
+  log.fatal({ err }, 'unhandledRejection');
+  shutdown(1);          // never swallow &mdash; exit cleanly
+});
+process.on('uncaughtException', (err) =&gt; {
+  log.fatal({ err }, 'uncaughtException');
+  shutdown(1);
+});</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Rules</h3>
+        <ul>
+          <li>One <code>HttpError</code> shape, one error middleware</li>
+          <li>Throw, don't return error envelopes &mdash; let the pipeline do it</li>
+          <li>5xx logs an error; 4xx does not (it's user error)</li>
+          <li>Process-level handlers <em>exit</em>, they don't recover</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 05 — STRUCTURE ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">05</span><h2>Project Structure at Scale</h2></div>
+  <p>The intro deck shows <code>app.js + routes/ + controllers/</code>. That works to ~5 kLOC. Past that you'll want one of two shapes: <span class="a">layered</span> (technology cuts) or <span class="g">feature-based</span> (domain cuts).</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Layered (small/medium apps)</h3>
+<pre><code class="language-text">src/
+├── app.js              # composition root
+├── server.js           # boots app + db + queues
+├── routes/             # express routers
+│   ├── users.js
+│   └── orders.js
+├── controllers/        # http &lt;-&gt; service glue
+├── services/           # domain logic
+├── repositories/       # db access (knex/prisma)
+├── schemas/            # Zod request/response
+├── middleware/         # auth, rate limit, errors
+├── lib/                # cross-cutting helpers
+└── config/</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Feature-based (medium/large)</h3>
+<pre><code class="language-text">src/
+├── app.js
+├── server.js
+├── core/               # cross-cutting: logger, db, queue
+├── modules/
+│   ├── users/
+│   │   ├── users.routes.js
+│   │   ├── users.controller.js
+│   │   ├── users.service.js
+│   │   ├── users.repo.js
+│   │   ├── users.schemas.js
+│   │   └── users.test.js
+│   ├── orders/
+│   └── billing/
+└── shared/             # DTOs &amp; types used by &gt;1 module</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>The composition root</h3>
+<pre><code class="language-javascript">// src/app.js &mdash; pure composition, no global singletons
+function createApp({ db, queue, logger }) {
+  const app = express();
+  app.set('trust proxy', 1);
+  app.use(requestId());
+  app.use(httpLogger(logger));
+  app.use(express.json({ limit: '128kb' }));
+  app.use(rateLimit());
+
+  app.use('/v1/users',  usersRouter({ db, queue }));
+  app.use('/v1/orders', ordersRouter({ db, queue }));
+
+  app.get('/healthz',  (_q,r) =&gt; r.json({ ok: true }));
+  app.get('/readyz',   ready({ db, queue }));
+
+  app.use(notFound);
+  app.use(errorHandler);
+  return app;
+}
+module.exports = { createApp };</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Why this shape</h3>
+        <ul>
+          <li>No <code>require('./db')</code> in service code &mdash; everything injected</li>
+          <li>Tests build their own <code>app</code> with mocks &mdash; no global teardown</li>
+          <li>Routers mount under <code>/v1</code> from day one &mdash; versioning is free later</li>
+          <li>Middleware order in <em>one</em> file &mdash; reading the request flow takes 10 seconds</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 06 — VALIDATION ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">06</span><h2>Validation at the Boundary</h2></div>
+  <p>Validate <span class="a">once, at the edge</span>, with a single tool. The output of validation is your <em>only</em> input to handlers &mdash; raw <code>req.body</code> never touches the service layer.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Zod &mdash; small, TS-first</h3>
+<pre><code class="language-typescript">import { z } from 'zod';
+
+const UserCreate = z.object({
+  email: z.string().email(),
+  name:  z.string().min(1).max(120),
+  role:  z.enum(['user','admin']).default('user'),
+});
+type UserCreate = z.infer&lt;typeof UserCreate&gt;;
+
+// reusable middleware
+const validate = (schema, source = 'body') =&gt;
+  (req, _res, next) =&gt; {
+    const r = schema.safeParse(req[source]);
+    if (!r.success) return next(
+      new HttpError(400, 'validation_failed',
+                    'Invalid request', r.error.flatten()));
+    req[source] = r.data;
+    next();
+  };
+
+usersRouter.post('/', validate(UserCreate), createUser);</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Validate every input source</h3>
+        <ul>
+          <li><code>body</code> &mdash; JSON or form payload</li>
+          <li><code>params</code> &mdash; path parameters &mdash; <em>always</em> validate UUIDs / IDs</li>
+          <li><code>query</code> &mdash; coerce strings to numbers / booleans / dates</li>
+          <li><code>headers</code> &mdash; for API keys, content-type, idempotency keys</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Coercion + defaults</h3>
+<pre><code class="language-typescript">// query strings are always strings &mdash; coerce at the schema
+const UserList = z.object({
+  page: z.coerce.number().int().min(1).default(1),
+  size: z.coerce.number().int().min(1).max(100).default(20),
+  q:    z.string().trim().optional(),
+});
+
+usersRouter.get('/',
+  validate(UserList, 'query'),
+  async (req, res) =&gt; {
+    // req.query is now { page: number, size: number, q?: string }
+    res.json(await users.list(req.query));
+});</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Tools compared</h3>
+        <table>
+          <thead><tr><th>Tool</th><th>Strength</th><th>Pick when</th></tr></thead>
+          <tbody>
+            <tr><td>Zod</td><td>TS inference</td><td>TypeScript codebase</td></tr>
+            <tr><td>Joi</td><td>Mature, expressive</td><td>JS / older codebase</td></tr>
+            <tr><td>TypeBox</td><td>JSON Schema native</td><td>Want OpenAPI from schema</td></tr>
+            <tr><td>express-validator</td><td>Built for Express</td><td>Per-field chained API</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't</h3>
+        <p>Don't trust <code>req.body</code> directly, don't validate inside the controller, don't have two validation libraries in one repo.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 07 — AUTHENTICATION ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">07</span><h2>Authentication Patterns</h2></div>
+  <p>Three common shapes, each with a Right Way and a load-bearing detail. The intro deck shows mechanics; this one is <span class="a">choices and pitfalls</span>.</p>
+  <div class="cols cols-3">
+    <div class="card amber"><h3>Server-side sessions</h3>
+      <ul>
+        <li>Cookie holds an opaque session ID</li>
+        <li>Session state in Redis (never in-memory)</li>
+        <li>Cookie flags: <code>HttpOnly · Secure · SameSite=Lax</code></li>
+        <li>Rotate on privilege change; absolute + idle TTLs</li>
+        <li>Best for browser apps you control</li>
+      </ul>
+<pre><code class="language-javascript">app.use(session({
+  store: new RedisStore({ client: redis }),
+  secret: process.env.SESSION_SECRET,
+  cookie: { httpOnly: true, secure: true,
+            sameSite: 'lax', maxAge: 30*60*1000 },
+  rolling: true, resave: false, saveUninitialized: false,
+}));</code></pre>
+    </div>
+    <div class="card green"><h3>JWT access + refresh</h3>
+      <ul>
+        <li>Short-lived <span class="g">access JWT</span> (5&ndash;15 min) signed by your IdP</li>
+        <li>Long-lived <span class="g">refresh token</span> stored as a <em>HttpOnly cookie</em></li>
+        <li>Validate <code>iss / aud / exp / nbf</code> &mdash; never just decode</li>
+        <li>Refresh-token rotation with reuse detection</li>
+        <li>Best for APIs serving multiple clients</li>
+      </ul>
+<pre><code class="language-javascript">// verify in middleware
+const { payload } = await jwtVerify(token, jwks, {
+  issuer: ISS, audience: AUD,
+  algorithms: ['RS256','ES256']
+});
+req.user = { sub: payload.sub, scope: payload.scope };</code></pre>
+    </div>
+    <div class="card purple"><h3>API keys / mTLS</h3>
+      <ul>
+        <li>Keys: hash at rest (Argon2id), never log, scope per key</li>
+        <li>Bind to caller IP / origin where realistic</li>
+        <li>mTLS for service-to-service &mdash; verify SAN against an allow-list</li>
+        <li>Use a header like <code>X-Api-Key</code>; rotate on a schedule</li>
+        <li>Best for B2B and east-west calls</li>
+      </ul>
+<pre><code class="language-javascript">async function apiKey(req, _res, next) {
+  const k = req.get('x-api-key');
+  if (!k) throw Unauthorized();
+  const row = await keys.byHash(sha256(k));
+  if (!row || row.revoked) throw Unauthorized();
+  req.caller = { keyId: row.id, scopes: row.scopes };
+  next();
+}</code></pre>
+    </div>
+  </div>
+  <p style="margin-top:.3em;"><span class="a">Cross-cutting:</span> always rate-limit the login / refresh endpoints separately; log auth failures with <em>userless</em> metadata; never leak whether the email exists in the error message.</p>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 08 — AUTHORIZATION ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">08</span><h2>Authorisation Patterns</h2></div>
+  <p>Authentication answers <em>who</em>; authorisation answers <em>may they</em>. Encode it as <span class="a">middleware that throws</span> &mdash; the same pipeline that handles validation handles AuthZ failures.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Route guards by scope</h3>
+<pre><code class="language-javascript">// require any of the listed scopes
+const requireScope = (...scopes) =&gt; (req, _res, next) =&gt; {
+  if (!req.user) throw Unauthorized();
+  const have = new Set((req.user.scope ?? '').split(' '));
+  if (!scopes.some(s =&gt; have.has(s))) throw Forbidden();
+  next();
+};
+
+usersRouter.get ('/', requireScope('users:read'), list);
+usersRouter.post('/', requireScope('users:write'), create);
+
+// pluck the user-or-admin variant
+const requireSelfOrAdmin = (req, _res, next) =&gt; {
+  if (req.user.role === 'admin') return next();
+  if (req.user.sub === req.params.id) return next();
+  throw Forbidden();
+};
+usersRouter.get('/:id', requireSelfOrAdmin, byId);</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Resource-level checks</h3>
+<pre><code class="language-javascript">// load resource then check &mdash; one DB hit, clear ownership rule
+async function ownPost(req, _res, next) {
+  const post = await posts.byId(req.params.id);
+  if (!post) throw NotFound();
+  if (post.author_id !== req.user.sub &amp;&amp;
+      req.user.role !== 'admin') throw Forbidden();
+  req.post = post;     // hand off to handler
+  next();
+}
+
+postsRouter.put('/:id', ownPost, update);
+postsRouter.delete('/:id', ownPost, destroy);</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Policy middleware (OPA / Cedar)</h3>
+<pre><code class="language-javascript">// thin shim &mdash; offload the decision
+async function authorise(req, _res, next) {
+  const decision = await policy.evaluate({
+    principal: req.user,
+    action:    `${req.method} ${req.route.path}`,
+    resource:  req.post ?? req.params,
+    context:   { ip: req.ip, time: Date.now() },
+  });
+  if (!decision.allow) throw Forbidden(decision.reasons);
+  next();
+}</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Patterns to favour</h3>
+        <ul>
+          <li><span class="b">Deny by default</span> &mdash; mount AuthZ <em>before</em> the handler, not as an "if" inside</li>
+          <li>Return <span class="b">404, not 403</span> when even the existence of a resource is sensitive (multi-tenant)</li>
+          <li>Cache decisions per request (<code>req.user.scopes</code>), not per process</li>
+          <li>Audit-log every decision &gt; <code>info</code>; include <code>request_id</code> + principal + action</li>
+          <li>Test the deny path &mdash; the false-positive is the bug that costs money</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Footguns</h3>
+        <ul>
+          <li>Trusting <code>req.user.role</code> from the body / query</li>
+          <li>String-comparing scopes case-insensitively</li>
+          <li>Mixing AuthN and AuthZ in one middleware (hard to test)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 09 — STREAMING ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">09</span><h2>Streaming Responses</h2></div>
+  <p>Most APIs return JSON in one <code>res.json()</code>. Some don't &mdash; <span class="a">downloads</span>, <span class="g">SSE</span>, <span class="p">progress</span>, <span class="b">large reports</span> &mdash; benefit from streaming. Get it wrong and you OOM the process.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>File downloads &mdash; pipe, don't buffer</h3>
+<pre><code class="language-javascript">// BAD &mdash; reads whole file into memory
+app.get('/r/:id', async (req, res) =&gt; {
+  const buf = await fs.readFile(path);
+  res.type('application/pdf').send(buf);
+});
+
+// GOOD &mdash; pipeline with cleanup on abort
+const { pipeline } = require('node:stream/promises');
+app.get('/r/:id', async (req, res) =&gt; {
+  res.type('application/pdf');
+  res.setHeader('Content-Disposition',
+                `attachment; filename="r-${req.params.id}.pdf"`);
+  await pipeline(
+    fs.createReadStream(path),
+    res
+  );  // closes both sides on error
+});</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>SSE &mdash; progress / live updates</h3>
+<pre><code class="language-javascript">app.get('/jobs/:id/stream', async (req, res) =&gt; {
+  res.set({
+    'Content-Type':      'text/event-stream',
+    'Cache-Control':     'no-cache, no-transform',
+    'Connection':        'keep-alive',
+    'X-Accel-Buffering': 'no'   // disable nginx buffer
+  });
+  res.flushHeaders();
+
+  const send = (e, d) =&gt;
+    res.write(`event: ${e}\ndata: ${JSON.stringify(d)}\n\n`);
+
+  const sub = events.subscribe(req.params.id, send);
+  req.on('close', () =&gt; sub.unsubscribe());
+});</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Streaming JSON arrays</h3>
+<pre><code class="language-javascript">// for very large lists &mdash; ndjson is the right answer most of the time
+app.get('/users.ndjson', async (req, res) =&gt; {
+  res.type('application/x-ndjson');
+  for await (const row of knex('users').stream()) {
+    if (!res.write(JSON.stringify(row) + '\n'))
+      await once(res, 'drain');   // back-pressure
+  }
+  res.end();
+});</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Range requests for media</h3>
+<pre><code class="language-javascript">// Express handles HEAD / If-Modified-Since / If-None-Match / Range
+// when you use res.sendFile() / res.download()
+app.get('/audio/:id', (req, res) =&gt; {
+  res.sendFile(absPath, {
+    acceptRanges: true,
+    cacheControl: true,
+    maxAge: '1h'
+  });
+});</code></pre>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Pitfalls</h3>
+        <ul>
+          <li><code>compression()</code> in front of SSE &mdash; chunked output gets buffered &rarr; <em>silent</em> client</li>
+          <li>Missing <code>req.on('close')</code> &mdash; orphaned subscribers leak memory</li>
+          <li>Awaiting a giant query before streaming &mdash; defeats the point</li>
+          <li>Forgetting <code>X-Accel-Buffering: no</code> behind nginx</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 10 — UPLOADS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">10</span><h2>File Uploads</h2></div>
+  <p>Three real choices &mdash; <span class="a">memory</span>, <span class="g">disk</span> or <span class="p">direct-to-S3</span>. Pick by file size, retention, and whether your app instance should ever own the bytes.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Multer &mdash; small files</h3>
+<pre><code class="language-javascript">const multer = require('multer');
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits:  { fileSize: 5 * 1024 * 1024,    // 5 MB
+             files: 1 },
+  fileFilter: (_req, file, cb) =&gt; {
+    if (!/^image\/(png|jpe?g|webp)$/.test(file.mimetype))
+      return cb(new HttpError(415, 'unsupported_media',
+                              'image png/jpg/webp only'));
+    cb(null, true);
+  }
+});
+
+app.post('/avatar',
+  requireAuth,
+  upload.single('image'),
+  async (req, res) =&gt; {
+    const url = await s3.put(req.file.buffer, key,
+                             { ContentType: req.file.mimetype });
+    res.json({ url });
+  });</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Disk for resumable / large</h3>
+<pre><code class="language-javascript">// stream to disk, then move &mdash; keeps memory flat
+const upload = multer({
+  storage: multer.diskStorage({ destination: '/var/uploads' }),
+  limits:  { fileSize: 100 * 1024 * 1024 }
+});</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Direct-to-S3 (recommended)</h3>
+<pre><code class="language-javascript">// 1) sign a one-time PUT URL on the server
+app.post('/uploads/sign', requireAuth, async (req, res) =&gt; {
+  const { contentType, contentLength } = SignReq.parse(req.body);
+  if (contentLength &gt; 50 * 1024 * 1024)
+    throw HttpError(413, 'too_large', 'max 50MB');
+  const key = `u/${req.user.sub}/${ulid()}`;
+  const url = await getSignedUrl(s3, new PutObjectCommand({
+    Bucket: BUCKET, Key: key,
+    ContentType: contentType
+  }), { expiresIn: 60 });
+  res.json({ url, key });
+});
+
+// 2) browser uploads to S3, then POSTs the key back
+app.post('/photos', requireAuth, async (req, res) =&gt; {
+  const { key } = AttachReq.parse(req.body);
+  await photos.create({ user: req.user.sub, key });
+  res.status(201).end();
+});</code></pre>
+        <p style="margin-top:.3em;">App never sees the bytes &rarr; no RAM spike, no egress cost, fewer middleware concerns. The same pattern works for GCS / Azure Blob.</p>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Always</h3>
+        <ul>
+          <li>Cap <code>fileSize</code> <em>and</em> total request size at the proxy</li>
+          <li>Validate MIME from sniffing the buffer, not just the header</li>
+          <li>Strip / rename filenames; never echo raw user filenames into headers</li>
+          <li>Scan with ClamAV (or async post-upload) before serving back</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 11 — RATE LIMITING ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">11</span><h2>Rate Limiting &amp; Abuse Protection</h2></div>
+  <p>Three layers, each catching a different failure: <span class="a">global</span> (DoS), <span class="g">per-user</span> (fairness), <span class="p">per-endpoint</span> (login brute force). Implement all three; they don't replace each other.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>express-rate-limit + Redis</h3>
+<pre><code class="language-javascript">const rateLimit = require('express-rate-limit');
+const RedisStore = require('rate-limit-redis').default;
+
+const store = new RedisStore({
+  sendCommand: (...args) =&gt; redis.call(...args)
+});
+
+// 1) global &mdash; per IP, all routes
+const globalLimiter = rateLimit({
+  store, windowMs: 60_000, max: 600,
+  standardHeaders: 'draft-7', legacyHeaders: false,
+  keyGenerator: (req) =&gt; req.ip,
+});
+app.use(globalLimiter);
+
+// 2) per-user &mdash; mounted after auth
+const userLimiter = rateLimit({
+  store, windowMs: 60_000, max: 1200,
+  keyGenerator: (req) =&gt; req.user?.sub ?? req.ip,
+});
+app.use('/v1', requireAuth, userLimiter);</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Per-endpoint &mdash; the harshest one</h3>
+<pre><code class="language-javascript">const loginLimiter = rateLimit({
+  store, windowMs: 15 * 60_000, max: 5,
+  keyGenerator: (req) =&gt; `${req.ip}:${req.body.email}`,
+  skipSuccessfulRequests: true,    // only count failures
+});
+authRouter.post('/login', loginLimiter, login);</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Token-bucket vs fixed-window</h3>
+        <ul>
+          <li><span class="p">Fixed window</span> &mdash; simple, but bursts at the boundary</li>
+          <li><span class="p">Sliding window</span> &mdash; smoother; default in <code>express-rate-limit</code> v7</li>
+          <li><span class="p">Token bucket</span> &mdash; fair under bursty traffic; use a Lua script in Redis or a library</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Beyond rate limiting</h3>
+        <ul>
+          <li><span class="b">Slow-down</span> &mdash; <code>express-slow-down</code> adds latency before blocking; gentler UX</li>
+          <li><span class="b">Account lockouts</span> &mdash; after N failures, lock with email-based unlock; don't combine with IP</li>
+          <li><span class="b">CAPTCHA / Turnstile</span> &mdash; on signup, password reset, contact forms; never on login mid-flow</li>
+          <li><span class="b">Body-size caps</span> at <code>express.json({ limit: '128kb' })</code> &mdash; the cheapest DoS defence</li>
+          <li><span class="b">Concurrency caps</span> per user with <code>p-limit</code> on expensive operations</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>If you're behind a proxy</h3>
+        <p>Set <code>app.set('trust proxy', 1)</code> &mdash; otherwise <code>req.ip</code> is the proxy and <em>everyone</em> shares one bucket.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 12 — CACHING ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">12</span><h2>Caching</h2></div>
+  <p>Four layers, top to bottom: <span class="a">CDN</span>, <span class="g">conditional GETs</span> (ETag / Last-Modified), <span class="p">Redis cache-aside</span>, <span class="b">in-process memo</span>. Each catches different cost.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Cache-Control by intent</h3>
+<pre><code class="language-javascript">// public, immutable assets
+app.use('/static', express.static('public', {
+  immutable: true, maxAge: '365d'
+}));
+
+// private, per-user, never cached upstream
+app.use('/v1/me', (req, res, next) =&gt; {
+  res.set('Cache-Control',
+          'private, no-store, no-cache, must-revalidate');
+  next();
+});
+
+// cdn-cacheable list, short TTL
+app.get('/v1/posts', cache(60), listPosts);
+
+function cache(maxAge) {
+  return (_req, res, next) =&gt; {
+    res.set('Cache-Control',
+            `public, max-age=${maxAge}, stale-while-revalidate=30`);
+    next();
+  };
+}</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>ETag / 304</h3>
+<pre><code class="language-javascript">// Express defaults to weak ETag on res.json/.send
+app.set('etag', 'strong');
+
+// or compute your own from a row's updated_at + version
+app.get('/v1/posts/:id', async (req, res) =&gt; {
+  const p = await posts.byId(req.params.id);
+  if (!p) throw NotFound();
+  const tag = `"${p.id}-${p.version}"`;
+  if (req.get('if-none-match') === tag) return res.status(304).end();
+  res.set('ETag', tag).json(p);
+});</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Cache-aside (Redis)</h3>
+<pre><code class="language-javascript">async function postById(id) {
+  const k = `post:${id}`;
+  const hit = await redis.get(k);
+  if (hit) return JSON.parse(hit);
+
+  const row = await db('posts').where({ id }).first();
+  if (row) await redis.set(k, JSON.stringify(row), 'EX', 60);
+  return row;
+}
+
+// invalidate on write
+async function updatePost(id, patch) {
+  await db('posts').where({ id }).update(patch);
+  await redis.del(`post:${id}`);
+}</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Beware the stampede</h3>
+        <p>When the key expires under load, every concurrent request misses and hits the DB. Mitigate with <span class="b">single-flight</span> (one request fills the cache, others wait), <span class="b">stale-while-revalidate</span> at the cache layer, or <span class="b">jittered TTLs</span> (<code>EX 60 + rand(0,10)</code>).</p>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>What not to cache</h3>
+        <ul>
+          <li>Anything personalised behind a public URL &mdash; one slip leaks data across users</li>
+          <li>Lists with cursors &mdash; tight TTL or skip; staleness is confusing</li>
+          <li>Any 4xx / 5xx &mdash; cache successes only</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 13 — DATABASE ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">13</span><h2>Database Integration Patterns</h2></div>
+  <p>One pool per process; one transaction per request that needs one; never <code>require('./db')</code> deep in services. The shape that scales is <span class="a">DI from the composition root</span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Repository + service shape</h3>
+<pre><code class="language-javascript">// repositories/users.js
+module.exports = (db) =&gt; ({
+  byEmail: (e) =&gt; db('users').where({ email: e }).first(),
+  create:  (i) =&gt; db('users').insert(i).returning('*'),
+});
+
+// services/users.js
+module.exports = ({ usersRepo, queue, logger }) =&gt; ({
+  async signup(input) {
+    const exists = await usersRepo.byEmail(input.email);
+    if (exists) throw Conflict('email taken');
+    const [user] = await usersRepo.create(input);
+    await queue.add('welcome-email', { id: user.id });
+    return user;
+  }
+});
+
+// composition
+const usersRepo    = repos.users(db);
+const usersService = services.users({ usersRepo, queue, logger });
+app.use('/v1/users', usersRouter({ usersService }));</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card green"><h3>Transaction per request</h3>
+<pre><code class="language-javascript">// when a single endpoint must be atomic
+function withTransaction(db) {
+  return async (req, _res, next) =&gt; {
+    req.tx = await db.transaction();
+    res.on('finish', () =&gt; {
+      if (res.statusCode &lt; 400) req.tx.commit();
+      else                       req.tx.rollback();
+    });
+    res.on('close', () =&gt; req.tx.rollback().catch(()=&gt;{}));
+    next();
+  };
+}
+
+// use sparingly &mdash; only on endpoints that need it
+postsRouter.post('/transfer', withTransaction(db), transfer);</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>What not to do</h3>
+        <ul>
+          <li><span class="r">Don't</span> wrap every request in a transaction &mdash; locks held during slow downstreams stall the DB</li>
+          <li><span class="r">Don't</span> share a checked-out client across awaits &mdash; one connection, multiple requests = silent corruption</li>
+          <li><span class="r">Don't</span> open a connection per query &mdash; the pool exists for a reason</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Read replicas</h3>
+        <p>Two pools, two clients: <code>writer</code> and <code>reader</code>. Default to <code>writer</code> for the request lifetime; opt in to <code>reader</code> for clearly idempotent GETs. Be honest about replication lag &mdash; "I just wrote then read" returns stale data.</p>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Health</h3>
+        <p>Expose <code>/readyz</code> that runs <code>SELECT 1</code> through the pool. Liveness (<code>/healthz</code>) only checks the process is alive &mdash; <em>don't</em> let DB outages restart the pod and lose warm caches.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 14 — JOBS ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">14</span><h2>Background Jobs &amp; Decoupling</h2></div>
+  <p>If a request is taking &gt; 200ms because of a side-effect (email, webhook, image resize), <span class="a">enqueue, don't await</span>. The classic Node stack is <span class="g">BullMQ</span> on Redis &mdash; battle-tested, observable, with retries and DLQ.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Enqueue from a handler</h3>
+<pre><code class="language-javascript">// queue.js &mdash; one queue per logical job kind
+const { Queue } = require('bullmq');
+const emails = new Queue('emails', { connection: redis });
+
+// in a service
+async function signup(input) {
+  const user = await usersRepo.create(input);
+  await emails.add('welcome', { userId: user.id }, {
+    attempts: 5,
+    backoff: { type: 'exponential', delay: 1000 },
+    removeOnComplete: 1000,
+    removeOnFail:     500,
+  });
+  return user;
+}</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Worker process</h3>
+<pre><code class="language-javascript">// worker.js &mdash; runs in its own process
+const { Worker } = require('bullmq');
+
+new Worker('emails', async (job) =&gt; {
+  const u = await users.byId(job.data.userId);
+  await mailer.send({ to: u.email, template: job.name });
+}, { connection: redis, concurrency: 10 });
+
+// SIGTERM &rarr; await worker.close() &rarr; exit</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Patterns that pay off</h3>
+        <ul>
+          <li><span class="p">Idempotent jobs</span> &mdash; re-running must not double-charge / double-send. Use a <code>jobId</code> derived from the work</li>
+          <li><span class="p">Outbox pattern</span> for "DB write + queue": insert into <code>outbox</code> in the same transaction; a relay process pushes to BullMQ</li>
+          <li><span class="p">Dead-letter queue</span> &mdash; jobs that fail past <code>attempts</code> land in a "failed" view; alert on growth</li>
+          <li><span class="p">Bounded concurrency</span> per worker, sized to downstream's tolerance, not your CPU</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Operational kit</h3>
+        <ul>
+          <li><span class="b">Bull Board</span> for an admin UI &mdash; behind auth, never public</li>
+          <li><span class="b">BullMQ metrics</span> &rarr; Prometheus: queue length, processing time, failure rate</li>
+          <li>Run workers on <em>separate</em> deploys from the API &mdash; scale them independently</li>
+          <li>Cap memory; let the orchestrator restart leaky workers on RSS thresholds</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't reach for queues for everything</h3>
+        <p>If the work is &lt; 50ms and rarely fails, in-process <code>setImmediate</code> or just-do-it is fine. Queues add operational surface; pay for them when retries / parallelism / decoupling actually matter.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 15 — TESTING ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">15</span><h2>Testing</h2></div>
+  <p>Three layers, fastest first: <span class="a">unit</span> (pure functions), <span class="g">HTTP integration</span> (supertest against a built app), <span class="p">contract</span> (against the real OpenAPI). Most teams over-invest in unit and under-invest in HTTP.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>HTTP integration with supertest</h3>
+<pre><code class="language-javascript">const request = require('supertest');
+const { createApp } = require('../src/app');
+
+let app, db;
+beforeAll(async () =&gt; {
+  db  = await openTestDb();
+  app = createApp({ db, queue: fakeQueue, logger });
+  await db.migrate.latest();
+});
+afterAll(async () =&gt; { await db.destroy(); });
+
+test('POST /v1/users returns 201', async () =&gt; {
+  const res = await request(app)
+    .post('/v1/users')
+    .send({ email: 'a@x.io', name: 'Alice' })
+    .expect(201);
+  expect(res.body).toMatchObject({ email: 'a@x.io' });
+});
+
+test('rejects invalid body', async () =&gt; {
+  await request(app).post('/v1/users').send({}).expect(400);
+});</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Auth in tests</h3>
+<pre><code class="language-javascript">// helper: build an authenticated agent
+async function asUser(app, claims = {}) {
+  const token = await signTestToken({ sub: 'u_1', ...claims });
+  const a = request.agent(app);
+  a.set('authorization', `Bearer ${token}`);
+  return a;
+}
+
+const me = await asUser(app, { scope: 'users:read' });
+await me.get('/v1/users/me').expect(200);</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Contract tests with the real spec</h3>
+<pre><code class="language-javascript">// Validate every response against the OpenAPI document
+const OpenAPIResponseValidator =
+  require('openapi-response-validator').default;
+const spec = require('./openapi.json');
+
+const validator = new OpenAPIResponseValidator({
+  responses: spec.paths['/v1/users/{id}'].get.responses,
+  components: spec.components,
+});
+
+test('GET /v1/users/{id} matches the contract', async () =&gt; {
+  const res = await request(app).get('/v1/users/u_1').expect(200);
+  const errs = validator.validateResponse(200, res.body);
+  expect(errs).toBeUndefined();
+});</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>What to fake, what to keep real</h3>
+        <table>
+          <thead><tr><th>Dependency</th><th>In tests</th></tr></thead>
+          <tbody>
+            <tr><td>Database</td><td>Real (SQLite or Testcontainers PG)</td></tr>
+            <tr><td>Queue</td><td>In-memory fake; assert <code>.add(...)</code> calls</td></tr>
+            <tr><td>HTTP downstream</td><td>nock / msw</td></tr>
+            <tr><td>Time</td><td><code>jest.useFakeTimers()</code> &mdash; never real <code>Date.now()</code> in assertions</td></tr>
+            <tr><td>Crypto / IDs</td><td>Inject a generator; freeze in tests</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't</h3>
+        <p>Don't test the framework &mdash; testing that "<code>app.get</code> works" is noise. Test <em>your</em> contract: status, body shape, side-effects.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 16 — OBSERVABILITY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">16</span><h2>Observability</h2></div>
+  <p>Three pillars: <span class="a">structured logs</span>, <span class="g">RED metrics</span>, <span class="p">distributed traces</span>. The minimum competent setup is <span class="b">pino + OpenTelemetry + a request-ID middleware</span> &mdash; ship that, then iterate.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Structured logs (pino)</h3>
+<pre><code class="language-javascript">const pino = require('pino');
+const pinoHttp = require('pino-http');
+
+const logger = pino({
+  level: process.env.LOG_LEVEL ?? 'info',
+  redact: ['req.headers.authorization',
+           'req.headers.cookie',
+           'res.headers["set-cookie"]'],
+  formatters: { level: (l) =&gt; ({ level: l }) },
+});
+
+app.use(pinoHttp({
+  logger,
+  genReqId: (req) =&gt; req.headers['x-request-id'] ?? randomUUID(),
+  customLogLevel: (_, res, err) =&gt;
+    err || res.statusCode &gt;= 500 ? 'error'
+    : res.statusCode &gt;= 400 ? 'warn' : 'info',
+}));
+
+// in any handler:
+app.get('/v1/users/:id', (req, res) =&gt;
+  req.log.info({ id: req.params.id }, 'fetching user'));</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>RED metrics</h3>
+        <p><span class="g">Rate</span>, <span class="g">Errors</span>, <span class="g">Duration</span> &mdash; per route, per status. <code>prom-client</code> + a histogram middleware exports them; Grafana draws the panel.</p>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Tracing &mdash; OpenTelemetry</h3>
+<pre><code class="language-javascript">// otel.js &mdash; required *before* express
+const { NodeSDK } = require('@opentelemetry/sdk-node');
+const { getNodeAutoInstrumentations } =
+  require('@opentelemetry/auto-instrumentations-node');
+
+new NodeSDK({
+  serviceName: 'api',
+  instrumentations: [getNodeAutoInstrumentations()],
+}).start();
+
+// every request gets a trace; HTTP / pg / redis spans appear
+// for free. Add manual spans for hot business logic.</code></pre>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Request-ID propagation</h3>
+        <ul>
+          <li>Read <code>x-request-id</code> if present; otherwise generate (ULID / UUID v7)</li>
+          <li>Echo back in the response header</li>
+          <li>Log it with every line; pass it to downstream calls</li>
+          <li>Bind it to the OTel trace via <code>span.setAttribute('http.request_id', id)</code></li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't observe like a junior</h3>
+        <ul>
+          <li>Don't <code>console.log(req.body)</code> &mdash; PII / tokens / passwords</li>
+          <li>Don't unbounded-cardinality &mdash; never tag metrics by user ID</li>
+          <li>Don't sample 100% of traces in prod; 1&ndash;5% with tail sampling on errors</li>
+          <li>Don't emit timing logs that are also metrics &mdash; pick one</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 17 — SECURITY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">17</span><h2>Security Hardening</h2></div>
+  <p>Six controls cover most of the OWASP Top 10 for a Node API. None are optional in production.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Helmet &amp; CSP</h3>
+<pre><code class="language-javascript">const helmet = require('helmet');
+
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'default-src':  ["'self'"],
+      'script-src':   ["'self'", "'strict-dynamic'", "'nonce-PLACEHOLDER'"],
+      'style-src':    ["'self'", "'unsafe-inline'"],
+      'img-src':      ["'self'", 'data:', 'https://cdn.example'],
+      'connect-src':  ["'self'", 'https://api.example'],
+      'object-src':   ["'none'"],
+      'frame-ancestors': ["'none'"],
+      'base-uri':     ["'self'"],
+      'form-action':  ["'self'"],
+      'upgrade-insecure-requests': [],
+    },
+  },
+  crossOriginOpenerPolicy:   { policy: 'same-origin' },
+  crossOriginResourcePolicy: { policy: 'same-site' },
+  referrerPolicy:            { policy: 'no-referrer' },
+}));</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>CORS &mdash; deliberately</h3>
+<pre><code class="language-javascript">const cors = require('cors');
+const allow = new Set(['https://app.example.com',
+                       'https://admin.example.com']);
+
+app.use(cors({
+  origin: (origin, cb) =&gt; cb(null, !origin || allow.has(origin)),
+  credentials: true,
+  methods: ['GET','POST','PUT','PATCH','DELETE'],
+  allowedHeaders: ['authorization','content-type','idempotency-key'],
+  maxAge: 600,
+}));</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>CSRF for cookie-auth</h3>
+<pre><code class="language-javascript">// only needed when the browser sends cookies automatically
+const csurf = require('csurf');
+
+app.use(csurf({
+  cookie: { httpOnly: true, secure: true, sameSite: 'lax' }
+}));
+
+app.use((req, res, next) =&gt; {
+  res.locals.csrfToken = req.csrfToken();
+  next();
+});
+
+// SameSite=Lax + double-submit token blocks the
+// classic GET-redirect-then-POST CSRF.</code></pre>
+        <p style="margin-top:.3em;">For pure JWT-Bearer APIs (no cookies), CSRF doesn't apply &mdash; but check every endpoint to be sure.</p>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Other essentials</h3>
+        <ul>
+          <li><span class="b">Body size cap</span> &mdash; <code>express.json({ limit: '128kb' })</code> + proxy cap</li>
+          <li><span class="b">HSTS</span> via helmet (1 year, includeSubDomains, preload)</li>
+          <li><span class="b">Cookies</span>: <code>HttpOnly · Secure · SameSite=Lax</code> (or <code>None</code> + cross-site CSRF token)</li>
+          <li><span class="b">Dependency hygiene</span>: <code>npm audit</code>, Renovate, lockfile, no <code>--unsafe-perm</code></li>
+          <li><span class="b">Secrets</span> via env / KMS &mdash; never commit, never log, never echo in errors</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>The biggest mistake</h3>
+        <p>Trusting input. Validate it, escape it on output, parameterise SQL, never <code>eval</code> a JSON-y string from the wire.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 18 — PERFORMANCE ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">18</span><h2>Performance</h2></div>
+  <p>Express is fast enough that the framework is rarely the bottleneck. The wins live in <span class="a">CPU cores used</span>, <span class="g">downstream parallelism</span>, <span class="p">payload size</span>, and <span class="b">serialisation</span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Use all the cores</h3>
+<pre><code class="language-javascript">// either node's built-in cluster
+const cluster = require('node:cluster');
+const cpus = require('node:os').availableParallelism();
+if (cluster.isPrimary) {
+  for (let i = 0; i &lt; cpus; i++) cluster.fork();
+} else {
+  require('./server');
+}
+
+// or PM2 in fork/cluster mode
+// pm2 start server.js -i max --name api</code></pre>
+        <p style="margin-top:.3em;">In Kubernetes, prefer <span class="a">one process per pod</span> &mdash; the orchestrator handles scaling. Cluster mode is for bare-metal / single-VM deploys.</p>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Compression at the edge, not in Node</h3>
+<pre><code class="language-javascript">// default: no compression in Express
+// reverse proxy (nginx / cloudfront) does gzip/brotli &mdash; faster, async
+// only enable compression() if you have no proxy:
+// const compression = require('compression');
+// app.use(compression({ threshold: 1024 }));</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Serialisation matters</h3>
+        <ul>
+          <li><code>JSON.stringify</code> a 1 MB object &asymp; 8&ndash;15ms blocking. Stream large lists as NDJSON</li>
+          <li>Don't return what the client doesn't ask for &mdash; field selection on list endpoints</li>
+          <li>Avoid <code>res.json</code> twice (logging then returning) &mdash; hot path runs once</li>
+          <li>Use <code>fast-json-stringify</code> if you have a fixed schema and serialisation shows in profiles</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Quick wins</h3>
+        <ul>
+          <li><span class="b">Keep-alive</span> &mdash; <code>server.keepAliveTimeout = 65_000</code> behind ALB / nginx (longer than upstream's idle)</li>
+          <li><span class="b">HTTP agent pooling</span> for downstream calls &mdash; <code>undici</code> / shared <code>http.Agent</code></li>
+          <li><span class="b">Parallelise</span> independent awaits &mdash; <code>Promise.all</code> or <code>Promise.allSettled</code></li>
+          <li><span class="b">Profile</span> with <code>--inspect</code> + Chrome DevTools or 0x flame graphs &mdash; intuition is wrong half the time</li>
+          <li><span class="b">Cap concurrency</span> on event-loop-blocking work &mdash; <code>p-limit</code></li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>If you're event-loop blocked</h3>
+        <p>Move the work: <code>worker_threads</code> for CPU, queues for I/O, <code>WebAssembly</code> for hot numeric loops. Don't try to hand-tune V8.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 19 — GRACEFUL SHUTDOWN ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">19</span><h2>Graceful Shutdown</h2></div>
+  <p>The orchestrator sends <span class="a">SIGTERM</span> and waits up to <code>terminationGracePeriodSeconds</code> (default 30s in K8s). Without graceful shutdown, in-flight requests get <code>ECONNRESET</code> and clients see <span class="r">5xx</span> on every deploy.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>The shutdown sequence</h3>
+<pre><code class="language-javascript">// server.js
+const server = app.listen(PORT, onListen);
+let shuttingDown = false;
+
+async function shutdown(signal) {
+  if (shuttingDown) return;
+  shuttingDown = true;
+  log.info({ signal }, 'shutting down');
+
+  // 1) stop accepting new connections; finish in-flight
+  server.close((err) =&gt; { if (err) log.error({err}); });
+
+  // 2) tell the load balancer we're not ready
+  app.locals.ready = false;
+
+  // 3) drain workers + close DB after server closes
+  await worker.close();      // BullMQ
+  await db.destroy();        // Knex pool
+  await redis.quit();
+  process.exit(0);
+}
+
+process.on('SIGTERM', () =&gt; shutdown('SIGTERM'));
+process.on('SIGINT',  () =&gt; shutdown('SIGINT'));</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Liveness vs readiness</h3>
+<pre><code class="language-javascript">// /healthz &mdash; "process is alive"; don't fail on dependency outages
+app.get('/healthz', (_q, r) =&gt; r.json({ ok: true }));
+
+// /readyz  &mdash; "I should receive traffic"; gate by deps + shutdown
+app.get('/readyz', async (_q, r) =&gt; {
+  if (shuttingDown || !app.locals.ready) return r.sendStatus(503);
+  try { await db.raw('select 1'); r.json({ ok: true }); }
+  catch { r.sendStatus(503); }
+});</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Why this order matters</h3>
+        <ol>
+          <li><span class="p">SIGTERM</span> &rarr; flip <code>readyz</code> to 503 first &mdash; LB stops sending new traffic within ~5s</li>
+          <li><span class="p">server.close()</span> &mdash; existing connections finish on their own deadline</li>
+          <li><span class="p">Workers</span> close after the API does &mdash; jobs already in flight finish; new pulls stop</li>
+          <li><span class="p">DB / cache</span> close last &mdash; only after handlers can no longer use them</li>
+        </ol>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Tunables</h3>
+        <ul>
+          <li>K8s <code>terminationGracePeriodSeconds</code> &gt; your slowest endpoint</li>
+          <li>K8s <code>preStop</code> hook of <code>sleep 5</code> avoids the LB / readiness race</li>
+          <li><code>server.headersTimeout / requestTimeout</code> &mdash; cap how long an in-flight request can stall shutdown</li>
+          <li>Set <code>keepAliveTimeout</code> &gt; load balancer's idle timeout</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Don't</h3>
+        <ul>
+          <li>Don't <code>process.exit()</code> on SIGTERM &mdash; you'll cut active sockets</li>
+          <li>Don't combine <code>/healthz</code> and <code>/readyz</code> &mdash; they answer different questions</li>
+          <li>Don't catch SIGTERM and <em>not</em> exit &mdash; the orchestrator escalates to SIGKILL</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 20 — REVERSE PROXY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">20</span><h2>Reverse Proxy &amp; TLS</h2></div>
+  <p>In production, Express is almost always behind a reverse proxy &mdash; nginx, Caddy, an ALB, Cloudflare. The proxy terminates TLS, handles compression, and rewrites headers. Express needs to <span class="a">trust the right ones</span>.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Trust proxy</h3>
+<pre><code class="language-javascript">// number = how many hops to trust X-Forwarded-For from
+app.set('trust proxy', 1);   // 1 proxy in front (LB)
+// or specific subnets
+app.set('trust proxy', 'loopback, 10.0.0.0/8');
+
+// req.ip       &rarr; client IP (X-Forwarded-For tail)
+// req.protocol &rarr; "http" or "https" from X-Forwarded-Proto
+// req.secure   &rarr; true behind HTTPS-terminating proxy</code></pre>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>nginx in front of Express</h3>
+<pre><code class="language-nginx">server {
+  listen 443 ssl http2;
+  server_name api.example.com;
+
+  ssl_certificate     /etc/ssl/cert.pem;
+  ssl_certificate_key /etc/ssl/key.pem;
+
+  client_max_body_size 10m;
+
+  location / {
+    proxy_pass         http://127.0.0.1:3000;
+    proxy_http_version 1.1;
+    proxy_set_header   Host              $host;
+    proxy_set_header   X-Real-IP         $remote_addr;
+    proxy_set_header   X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header   X-Forwarded-Proto $scheme;
+    proxy_set_header   Connection        '';
+    proxy_buffering    off;       # for SSE
+    proxy_read_timeout 120s;
+  }
+}</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>What the proxy should do</h3>
+        <ul>
+          <li><span class="p">TLS termination</span> &mdash; certificate, OCSP stapling, modern ciphers</li>
+          <li><span class="p">HTTP/2</span> &mdash; multiplexing on the wire; HTTP/1.1 to Node is fine</li>
+          <li><span class="p">gzip / brotli</span> &mdash; compression with shared dictionaries; Express skips it</li>
+          <li><span class="p">Static</span> &mdash; serve assets without ever hitting Node</li>
+          <li><span class="p">WAF / rate limit</span> at the perimeter &mdash; cheaper than in-app</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>What Express keeps</h3>
+        <ul>
+          <li><span class="b">Application logic</span> &mdash; routing, validation, AuthZ</li>
+          <li><span class="b">Per-user rate limits</span> &mdash; need user identity</li>
+          <li><span class="b">Per-route metrics</span> &mdash; the proxy doesn't know your routes</li>
+          <li><span class="b">Streaming</span> &mdash; just disable proxy buffering</li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Common bites</h3>
+        <ul>
+          <li><span class="r">Missing <code>trust proxy</code></span> &rarr; rate limits all share one IP, HTTPS detection wrong</li>
+          <li><span class="r">Mismatched timeouts</span> &mdash; Node's <code>keepAliveTimeout</code> &lt; proxy idle &rarr; <code>502</code> on every connection reuse</li>
+          <li><span class="r">Buffering on for SSE</span> &rarr; clients see nothing until the response ends</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 21 — OPENAPI ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">21</span><h2>OpenAPI &amp; Contract-First</h2></div>
+  <p>Two viable paths: <span class="a">code-first</span> (write Express, generate spec) or <span class="g">spec-first</span> (write OpenAPI, validate against it). Pick one per repo &mdash; mixing them is where contracts drift.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Code-first &mdash; from Zod / TypeBox</h3>
+<pre><code class="language-typescript">// zod-to-openapi or @asteasolutions/zod-to-openapi
+import { OpenAPIRegistry, OpenApiGeneratorV3 }
+  from '@asteasolutions/zod-to-openapi';
+
+const registry = new OpenAPIRegistry();
+registry.register('User', UserSchema);
+registry.registerPath({
+  method: 'get', path: '/users/{id}',
+  summary: 'Get a user by ID',
+  request: { params: z.object({ id: z.string().uuid() }) },
+  responses: {
+    200: { description: 'OK',
+           content: { 'application/json':
+                      { schema: UserSchema } } },
+    404: { description: 'Not found' },
+  }
+});
+
+const spec = new OpenApiGeneratorV3(registry.definitions)
+  .generateDocument({ openapi: '3.0.3', info, servers });
+
+app.get('/openapi.json', (_q, r) =&gt; r.json(spec));</code></pre>
+      </div>
+    </div>
+    <div>
+      <div class="card green"><h3>Spec-first &mdash; validate against it</h3>
+<pre><code class="language-javascript">const OpenApiValidator =
+  require('express-openapi-validator');
+
+app.use(OpenApiValidator.middleware({
+  apiSpec: './openapi.yaml',
+  validateRequests:  true,
+  validateResponses: { coerceTypes: false },
+}));
+
+// requests get validated against the spec automatically;
+// invalid ones &rarr; 400. Responses get validated in dev/CI &mdash;
+// a route that drifts from the spec fails its tests.</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>Either way, ship docs</h3>
+        <ul>
+          <li><span class="p">/docs</span> &rarr; Swagger UI or Redoc, behind admin auth</li>
+          <li><span class="p">/openapi.json</span> &rarr; the canonical document</li>
+          <li>Pin the spec version in <code>info.version</code>; bump on contract change</li>
+          <li>SDK generation (<code>openapi-typescript</code>) &mdash; clients get types for free</li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Why this pays off</h3>
+        <ul>
+          <li>Frontend gets types and a mock server before the API ships</li>
+          <li>Contract tests catch breakage before clients do</li>
+          <li>External integrators have one document to rely on</li>
+          <li>Versioning becomes a deliberate act, not an emergent one</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 22 — VS ALTERNATIVES ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">22</span><h2>Express vs Fastify, Koa, Hono, NestJS</h2></div>
+  <p>The Node web framework landscape grew up around Express; today there are stronger alternatives <em>per axis</em>. Most teams stay on Express because <span class="a">the ecosystem is the moat</span>; some genuinely benefit from moving.</p>
+  <table>
+    <thead>
+      <tr>
+        <th>Criterion</th>
+        <th>Express</th>
+        <th>Fastify</th>
+        <th>Koa</th>
+        <th>Hono</th>
+        <th>NestJS</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td><span class="a">Style</span></td><td>Middleware chain</td><td>Plugin / hook</td><td>Async middleware</td><td>Edge-first, web-std</td><td>Decorator, IoC</td></tr>
+      <tr><td><span class="g">Speed</span></td><td>Solid</td><td><span class="g">Fastest mainstream</span></td><td>~Express</td><td>Excellent on edge</td><td>Slower (DI overhead)</td></tr>
+      <tr><td><span class="p">Type safety</span></td><td>Manual</td><td>Built-in (JSON schema)</td><td>Manual</td><td><span class="g">Excellent</span></td><td><span class="g">Decorator-based</span></td></tr>
+      <tr><td><span class="b">Schema</span></td><td>BYO (Zod / Joi)</td><td><span class="g">Native JSON Schema</span></td><td>BYO</td><td>BYO (Zod nice)</td><td>BYO</td></tr>
+      <tr><td>Edge / Workers</td><td>No</td><td>Limited</td><td>No</td><td><span class="g">First-class</span></td><td>No</td></tr>
+      <tr><td>Ecosystem</td><td><span class="g">Largest</span></td><td>Growing</td><td>Smaller</td><td>Modern, smaller</td><td>Strong opinions</td></tr>
+      <tr><td>Learning curve</td><td><span class="g">Lowest</span></td><td>Medium</td><td>Low</td><td>Low (web-std)</td><td>Steep (DI / modules)</td></tr>
+      <tr><td>Best for</td><td>Most apps</td><td>Throughput-critical APIs</td><td>Tiny middleware DAGs</td><td>Cloudflare / Bun / Deno</td><td>Large enterprise apps</td></tr>
+    </tbody>
+  </table>
+  <div class="cols cols-3" style="margin-top:.3em;">
+    <div class="card amber">
+      <h3>Stay on Express when</h3>
+      <ul>
+        <li>Big team, big ecosystem dependency</li>
+        <li>Throughput is fine and CPU isn't the bottleneck</li>
+        <li>Boring is a feature</li>
+      </ul>
+    </div>
+    <div class="card green">
+      <h3>Move to Fastify when</h3>
+      <ul>
+        <li>You need 2&ndash;3&times; throughput on the same box</li>
+        <li>You want JSON-Schema-driven validation + serialisation</li>
+        <li>You like the plugin / hook architecture</li>
+      </ul>
+    </div>
+    <div class="card purple">
+      <h3>Move to Hono / NestJS when</h3>
+      <ul>
+        <li><span class="p">Hono</span>: deploying to Cloudflare Workers / Bun / Deno; want web-standard <code>Request</code></li>
+        <li><span class="p">NestJS</span>: large team that benefits from DI &amp; module boundaries; willing to pay for the structure</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 23 — EXPRESS 4 → 5 PLAYBOOK ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">23</span><h2>Express 4 &rarr; 5 Migration Playbook</h2></div>
+  <p>A focused upgrade in a real codebase &mdash; the steps that actually break, in the order they break.</p>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>Step 1 &mdash; environment</h3>
+        <ul>
+          <li>Bump Node to 18 LTS or 20 LTS</li>
+          <li>Bump <code>express</code> to <code>^5.0.0</code></li>
+          <li>Run <code>npm dedupe</code>, audit transitive Express 4 deps</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Step 2 &mdash; mechanical replacements</h3>
+<pre><code class="language-bash"># the diff a codemod or sed pass handles
+- app.del(...)                       app.delete(...)
+- req.param('x')                     req.params.x ?? req.query.x ?? req.body.x
+- res.send(404, body)                res.status(404).send(body)
+- res.redirect('/foo', 301)          res.redirect(301, '/foo')
+
+# remove these dependencies entirely
+- body-parser
+- express-async-errors</code></pre>
+      </div>
+      <div class="card purple" style="margin-top:.3em;"><h3>Step 3 &mdash; routing</h3>
+        <ul>
+          <li>Audit every <code>app.use('/x*', ...)</code> &rarr; <code>'/x{*splat}'</code></li>
+          <li>Audit every regex-in-string route; switch to a <code>RegExp</code> literal or named param</li>
+          <li>Old loose patterns sometimes match more than intended &mdash; the new strict syntax surfaces it</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card blue"><h3>Step 4 &mdash; async error pipeline</h3>
+        <ul>
+          <li>Remove <code>require('express-async-errors')</code></li>
+          <li>Run the test suite &mdash; tests that "passed because of <code>express-async-errors</code>" still pass</li>
+          <li>Tests that relied on Express 4 swallowing rejections &rarr; rewrite to expect a 500</li>
+          <li>Confirm your error middleware is <em>last</em>, signature <code>(err, req, res, next)</code></li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>Step 5 &mdash; production switches</h3>
+        <ul>
+          <li><span class="r">Trust proxy</span> &mdash; revisit your value behind LB / nginx; <code>req.ip</code> changed semantics for some setups</li>
+          <li><span class="r">Query parser</span> &mdash; default is now <code>'simple'</code>; if you used nested objects (<code>?a[b]=c</code>), explicitly set <code>app.set('query parser', 'extended')</code></li>
+          <li><span class="r">Body parser limits</span> &mdash; reapply <code>{ limit: '128kb' }</code> when switching from <code>body-parser</code> to <code>express.json()</code></li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Step 6 &mdash; ship behind a flag</h3>
+        <p>Deploy to a single-instance canary; watch error rate &amp; p99; promote after a clean 24 hours. Most regressions are routing-pattern bugs that surface only on real traffic.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══════════════════════════════ SLIDE 24 — SUMMARY ═══════════════════════════════ -->
+<section>
+  <div class="slide-hdr"><span class="tag">24</span><h2>Summary &amp; Next Steps</h2></div>
+  <div class="cols cols-2">
+    <div>
+      <div class="card amber"><h3>What "in practice" really means</h3>
+        <ul>
+          <li><span class="a">One async error pipeline</span> &mdash; throw, don't return error envelopes</li>
+          <li><span class="a">One validation tool</span> at the boundary; raw <code>req.body</code> never reaches services</li>
+          <li><span class="a">One composition root</span> &mdash; no global singletons; tests build their own app</li>
+          <li><span class="a">AuthZ before the handler</span>, never inside it; deny by default</li>
+          <li><span class="a">Stream when payloads are big</span>; offload when work is slow; queue when retries matter</li>
+        </ul>
+      </div>
+      <div class="card green" style="margin-top:.3em;"><h3>Production checklist</h3>
+        <ul>
+          <li>helmet + CSP + CORS allow-list + rate limits</li>
+          <li>pino structured logs + OpenTelemetry traces + RED metrics</li>
+          <li>Graceful shutdown sequenced: readyz &rarr; server &rarr; workers &rarr; deps</li>
+          <li>OpenAPI shipped at <code>/openapi.json</code>, validated in CI</li>
+          <li>Tests at the HTTP layer with supertest; contract tests in CI</li>
+        </ul>
+      </div>
+    </div>
+    <div>
+      <div class="card purple"><h3>Further reading</h3>
+        <ul>
+          <li><a href="https://expressjs.com/en/guide/migrating-5.html">Express 5 migration guide</a></li>
+          <li><a href="https://github.com/goldbergyoni/nodebestpractices">Node.js Best Practices</a> (Goldberg)</li>
+          <li><a href="https://expressjs.com/en/advanced/best-practice-security.html">Express security best practices</a></li>
+          <li><a href="https://www.openapis.org/">OpenAPI Specification</a> &amp; <a href="https://json-schema.org/">JSON Schema</a></li>
+          <li><a href="https://opentelemetry.io/docs/instrumentation/js/">OpenTelemetry for Node.js</a></li>
+        </ul>
+      </div>
+      <div class="card blue" style="margin-top:.3em;"><h3>Companion decks</h3>
+        <ul>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_Express_js/">Introduction to Express.js</a> &mdash; the foundation deck</li>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_Express_Middleware/">Introduction to Express Middleware</a></li>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_REST_API_Design/">Introduction to REST API Design</a></li>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_Node_Databases/">Introduction to Node.js &amp; Databases</a></li>
+          <li><a href="https://brendanjameslynskey.github.io/Introduction_to_Knex/">Introduction to Knex</a></li>
+        </ul>
+      </div>
+      <div class="card red" style="margin-top:.3em;"><h3>The single best habit</h3>
+        <p>Read your own access log every morning for a week. The slowest endpoints, the loudest 5xx, the strangest paths &mdash; you'll find more wins there than in any chapter of any book.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/highlight/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/plugin/notes/notes.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+<script>
+  Reveal.initialize({
+    hash: true,
+    slideNumber: 'c/t',
+    controls: true,
+    progress: true,
+    transition: 'slide',
+    width: 1280,
+    height: 800,
+    margin: 0.04,
+    plugins: [ RevealHighlight, RevealNotes ]
+  });
+</script>
+</body>
+</html>
