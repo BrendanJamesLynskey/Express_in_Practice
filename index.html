@@ -11,17 +11,17 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.6.1/theme/black.min.css">
 <style>
   :root {
-    --amber:  #f5a623;
-    --green:  #4ecb8d;
-    --purple: #a78bfa;
-    --blue:   #60a5fa;
-    --red:    #f87171;
-    --bg:     #0a0a0f;
-    --bg2:    #10101a;
-    --bg3:    #181824;
-    --border: #2a2a3a;
-    --text:   #e8e8f0;
-    --muted:  #8888a8;
+    --amber:  #efba4d;
+    --green:  #9dcba3;
+    --purple: #c2aef4;
+    --blue:   #93c6eb;
+    --red:    #f0846a;
+    --bg:     #17193a;
+    --bg2:    #1c1f44;
+    --bg3:    #21254d;
+    --border: #363c6c;
+    --text:   #efece6;
+    --muted:  #9093ba;
   }
 
   .reveal-viewport { background: var(--bg); }
@@ -37,7 +37,7 @@
   .reveal code { font-family: 'JetBrains Mono', monospace; font-size: .72em; }
   .reveal pre  { box-shadow: none; background: var(--bg3); border: 1px solid var(--border);
                  border-radius: 6px; padding: .3em .5em; margin: .25em 0; }
-  .reveal pre code { font-size: .52em; line-height: 1.35; background: transparent; color: #cdd6f4; }
+  .reveal pre code { font-size: .52em; line-height: 1.35; background: transparent; color: #dedde3; }
 
   .slide-hdr {
     display: flex; align-items: center; gap: .4em;
@@ -69,15 +69,15 @@
   .card.blue  { border-left: 3px solid var(--blue); }
   .card.red   { border-left: 3px solid var(--red); }
   .card h3 { font-size: .64em; margin: 0 0 .12em; }
-  .card p  { font-size: .52em; margin: 0; color: #b8b8d0; }
+  .card p  { font-size: .52em; margin: 0; color: #c3c4dc; }
   .card ul { margin: 0; padding-left: 1em; }
-  .card li { font-size: .52em; color: #b8b8d0; margin-bottom: .02em; }
+  .card li { font-size: .52em; color: #c3c4dc; margin-bottom: .02em; }
 
   .reveal table { width: 100%; border-collapse: collapse; font-size: .5em; }
   .reveal table th { background: var(--bg3); color: var(--amber); font-weight: 600;
                      padding: .2em .4em; border: 1px solid var(--border); text-align: left; }
-  .reveal table td { padding: .18em .4em; border: 1px solid var(--border); color: #ccc; }
-  .reveal table tr:nth-child(even) td { background: #0e0e18; }
+  .reveal table td { padding: .18em .4em; border: 1px solid var(--border); color: #d4d4e1; }
+  .reveal table tr:nth-child(even) td { background: #1b1d41; }
 
   .a  { color: var(--amber); font-weight: 600; }
   .g  { color: var(--green); font-weight: 600; }
@@ -114,8 +114,8 @@
     padding: .2em .55em; border-radius: 5px; font-size: .9em;
     background: var(--bg3); border: 1px solid var(--border); color: var(--text);
   }
-  .ss-node.active { background: #1a2a1a; border-color: var(--green); color: var(--green); }
-  .ss-node.done   { background: #1a1a2a; border-color: var(--purple); color: var(--purple); }
+  .ss-node.active { background: #333c41; border-color: var(--green); color: var(--green); }
+  .ss-node.done   { background: #232851; border-color: var(--purple); color: var(--purple); }
   .ss-arrow { color: var(--amber); }
   .ss-label { font-size: .8em; color: var(--muted); margin-left: .3em; }
 
@@ -129,7 +129,7 @@
 
 
 <!-- ═══════════════════════════════ SLIDE 01 — TITLE ═══════════════════════════════ -->
-<section class="title-slide" data-background-color="#0a0a0f">
+<section class="title-slide" data-background-color="#17193a">
   <div style="text-align:left; max-width:820px; margin:0 auto; padding: 1em 0;">
     <div style="font-family:'JetBrains Mono',monospace; font-size:.5em; color:var(--muted); margin-bottom:.4em; letter-spacing:.1em;">
       TECHNICAL PRESENTATION
@@ -156,7 +156,7 @@
       <span class="ss-arrow">→</span>
       <span class="ss-node done">📈 observe</span>
     </div>
-    <p style="max-width:620px; color:#a0a0c0; font-size:.56em; line-height:1.5; margin-top:1em;">
+    <p style="max-width:620px; color:#abadcd; font-size:.56em; line-height:1.5; margin-top:1em;">
       The companion deck to <em>Introduction to Express.js</em> &mdash; everything past "Hello World": project structure at scale, async error discipline, OpenAPI-first design, security hardening, observability, performance and graceful shutdown.
     </p>
     <div class="meta" style="margin-top:1.4em;">
@@ -167,7 +167,7 @@
 
 
 <!-- ═══════════════════════════════ SLIDE 02 — TOPICS ═══════════════════════════════ -->
-<section data-background-color="#0a0a0f">
+<section data-background-color="#17193a">
   <div class="slide-hdr"><span class="tag">02</span><h2>Topics</h2></div>
   <div class="cols cols-2">
     <div>
